@@ -172,7 +172,6 @@ send_data() {
 					if [ "$FAILING" -eq "0" ]; then
 						FAILING=1
 						log -e -n "Data not sent successfully. Response code is \"$response_code\"." \
-							"Error message is $error_message" \
 							"Run with verbose mode to find more."
 					fi
 					break
