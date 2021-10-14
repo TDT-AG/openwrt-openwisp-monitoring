@@ -23,6 +23,21 @@ time_to_seconds() {
 	unset time
 }
 
+log() {
+	level="$1"
+	shift
+
+	case "$level" in
+		-i) level=daemon.info ;;
+		-w) level=daemon.warn ;;
+		-e) level=daemon.err ;;
+	esac
+
+	logger -s "$@" -p "$level" -t openwisp-monitoring
+
+	[ "$level" = daemon.err ] && exit 1
+}
+
 start_service() {
 	# for openwisp-config
 	config_load openwisp
@@ -39,19 +54,9 @@ start_service() {
 	[ -n "$key" ] && key="--key $key"
 	[ -n "$verify_ssl" ] && verify_ssl="--verify_ssl $verify_ssl"
 
-	if [ -z "$base_url" ]; then
-		logger -s "url is not set, please add it to /etc/config/openwisp" \
-			-t openwisp-monitoring \
-			-p daemon.err
-		exit 1
-	fi
+	[ -z "$base_url" ] && log -e "url is not set, please add it to /etc/config/openwisp"
 
-	if [ -z "$uuid" ] || [ -z "$key" ]; then
-		logger -s "uuid or key are not set, please add these to /etc/config/openwisp" \
-			-t openwisp-monitoring \
-			-p daemon.err
-		exit 1
-	fi
+	[ -z "$uuid" ] || [ -z "$key" ] && log -e "uuid or key are not set, please add these to /etc/config/openwisp"
 
 	# for openwisp-monitoring
 	config_load openwisp-monitoring
@@ -62,12 +67,8 @@ start_service() {
 	config_get max_retries monitoring max_retries "5"
 
 	interval="$(time_to_seconds "$interval")"
-	if [ "$interval" -lt 1 ]; then
-		logger -s "Interval is invalid. Use time value(eg: '10', '2m', '3h', '1d')" \
-			-t openwisp-monitoring \
-			-p daemon.err
-		exit 1
-	fi
+	[ "$interval" -lt 1 ] && log -e "Interval is invalid. Use time value(eg: '10', '2m', '3h', '1d')"
+
 	interval="--interval $interval"
 	verbose="--verbose_mode ${verbose_mode:-0}"
 	set -- --monitored_interfaces \""$monitored_interfaces"\"
@@ -87,15 +88,11 @@ start_service() {
 	procd_set_param respawn "${respawn_threshold:-3600}" "${respawn_timeout:-5}" "${respawn_retry:-5}"
 	procd_close_instance
 
-	logger -s "$PROG_NAME started" \
-		-t openwisp-monitoring \
-		-p daemon.info
+	log -i "$PROG_NAME started"
 }
 
 stop_service() {
-	logger -s "$PROG_NAME stopping" \
-		-t openwisp-monitoring \
-		-p daemon.info
+	log -i "$PROG_NAME stopping"
 }
 
 service_triggers() {

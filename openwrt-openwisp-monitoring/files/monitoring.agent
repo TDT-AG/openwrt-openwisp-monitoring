@@ -44,10 +44,13 @@ log() {
 	fi
 
 	case "$level" in
-		-i) level=daemon.info;;
-		-w) level=daemon.warn;;
-		-e) level=daemon.error;;
-		-*) echo "Invalid message level : $level"; exit 1;;
+		-i) level=daemon.info ;;
+		-w) level=daemon.warn ;;
+		-e) level=daemon.err ;;
+		-*)
+			echo "Invalid message level : $level"
+			exit 1
+			;;
 	esac
 
 	logger -s "$@" -p "$level" -t openwisp-monitoring
