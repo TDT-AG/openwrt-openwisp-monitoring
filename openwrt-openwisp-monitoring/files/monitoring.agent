@@ -165,6 +165,7 @@ send_data() {
 					[ -f "$RESPONSE_FILE" ] && error_message="\"$(cat "$RESPONSE_FILE")\"" || error_message='"".'
 					log -e -v "Data not sent successfully. Response code is \"$response_code\"." \
 						"Error message is $error_message"
+					# check if agent was already passing or not to avoid repeating log messages
 					if [ "$FAILING" -eq "0" ]; then
 						FAILING=1
 						log -e -n "Data not sent successfully. Response code is \"$response_code\"." \
@@ -177,6 +178,7 @@ send_data() {
 				response_code=$($CURL_COMMAND -H "Content-Type: application/json" -d "$data" "$url")
 				if [ "$response_code" = "200" ]; then
 					log -i -v "Data sent successfully"
+					# check if agent was already failing or not to avoid repeating log messages
 					if [ "$FAILING" -eq "1" ]; then
 						log -i -n "Data sent successfully"
 						FAILING=0
