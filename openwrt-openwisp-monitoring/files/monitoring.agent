@@ -48,8 +48,7 @@ log() {
 		-w) level=daemon.warn ;;
 		-e) level=daemon.err ;;
 		-*)
-			echo "Invalid message level : $level"
-			exit 1
+			echoerr "Invalid message level : $level"
 			;;
 	esac
 
@@ -138,7 +137,7 @@ send_data() {
 	while true; do
 		for file in "$TMP_DIR"/*; do
 			if [ ! -f "$file" ]; then
-				log -v -i "No data file found to send"
+				log -i -v "No data file found to send"
 				trap handle_sigusr1 USR1
 				# SIGUSR1 signal received, interrupt sleep and continue sending data
 				sleep "$INTERVAL" &
@@ -171,7 +170,7 @@ send_data() {
 					# check if agent was already passing or not to avoid repeating log messages
 					if [ "$FAILING" -eq "0" ]; then
 						FAILING=1
-						log -e -n "Data not sent successfully. Response code is \"$response_code\"." \
+						[ "$VERBOSE_MODE" -ne "1" ] && log -e -n "Data not sent successfully. Response code is \"$response_code\"." \
 							"Run with verbose mode to find more."
 					fi
 					break
@@ -182,7 +181,7 @@ send_data() {
 					log -i -v "Data sent successfully"
 					# check if agent was already failing or not to avoid repeating log messages
 					if [ "$FAILING" -eq "1" ]; then
-						log -i -n "Data sent successfully"
+						[ "$VERBOSE_MODE" -ne "1" ] && log -i -n "Data sent successfully"
 						FAILING=0
 						rm -f "$RESPONSE_FILE"
 					fi
@@ -253,8 +252,7 @@ main() {
 				shift
 				;;
 			-*)
-				echo "Invalid option: $1"
-				exit 1
+				echoerr "Invalid option: $1"
 				;;
 			*) break ;;
 		esac
