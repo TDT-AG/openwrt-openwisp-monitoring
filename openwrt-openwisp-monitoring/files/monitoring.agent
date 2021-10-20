@@ -137,7 +137,7 @@ send_data() {
 	while true; do
 		for file in "$TMP_DIR"/*; do
 			if [ ! -f "$file" ]; then
-				log -i -v "No data file found to send"
+				log -i -v "No data file found to send. Checking after $INTERVAL seconds"
 				trap handle_sigusr1 USR1
 				# SIGUSR1 signal received, interrupt sleep and continue sending data
 				sleep "$INTERVAL" &
@@ -181,9 +181,9 @@ send_data() {
 					log -i -v "Data sent successfully"
 					# check if agent was already failing or not to avoid repeating log messages
 					if [ "$FAILING" -eq "1" ]; then
-						[ "$VERBOSE_MODE" -ne "1" ] && log -i -n "Data sent successfully"
 						FAILING=0
 						rm -f "$RESPONSE_FILE"
+						[ "$VERBOSE_MODE" -ne "1" ] && log -i -n "Data sent successfully"
 					fi
 					# remove saved data
 					rm -f "$filename"
